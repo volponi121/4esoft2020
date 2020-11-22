@@ -1,8 +1,14 @@
 package aula20201116;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.LinkedList;
 
 public class JobQueue {
+
+    private final Logger logger = LoggerFactory.getLogger(JobQueue.class);
+
     private LinkedList<Integer> jobs = new LinkedList<>();
     private JobQueueListener listener;
 
@@ -30,10 +36,10 @@ public class JobQueue {
     public synchronized Integer getNextJob() {
         synchronized (this) {
             if (this.jobs.isEmpty()) {
-                return null;
+                return 0;
             }
             Integer job = this.jobs.removeFirst();
-            System.out.println("getting another job!");
+            logger.info("Starting another job, {}", job);
             if (this.listener != null) {
                 this.listener.jobQueueChanged(this.jobs.size());
             }

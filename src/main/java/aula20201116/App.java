@@ -1,6 +1,6 @@
 package aula20201116;
 
-import java.awt.Component;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +8,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JDialog; 
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -32,44 +32,52 @@ public class App extends JDialog {
         super();
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         this.add(createPanel());
-        // this.jobs.queueJob(20);
-        // this.jobs.queueJob(15);
-        // this.jobs.queueJob(30);
-        // this.jobs.queueJob(5);
     }
 
 
     private JPanel createPanel() {
-        final JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(BorderFactory.createRaisedBevelBorder());
+        final JPanel panel = layoutPrincipal();
 
-        final JPanel firstRowPanel = new JPanel();
-        firstRowPanel.setLayout(new BoxLayout(firstRowPanel, BoxLayout.X_AXIS));
-        firstRowPanel.setAlignmentX(Component.LEFT_ALIGNMENT);        
-        firstRowPanel.add(new JLabel("Producers:   "));        
-        final JTextField fieldProducerCount = new JTextField(20);
-        final JButton btnAddProducer = new JButton(" + ");
-        btnAddProducer.addActionListener(e -> {            
-            JobProducer newProducer = new JobProducer(jobs);
-            producers.add(newProducer);
-            fieldProducerCount.setText(String.valueOf(producers.size()));
-            newProducer.start();
-        });
-        fieldProducerCount.setEnabled(false);
-        fieldProducerCount.setMaximumSize(fieldProducerCount.getPreferredSize());
-        btnAddProducer.setMaximumSize(btnAddProducer.getPreferredSize());
-        firstRowPanel.add(fieldProducerCount);
-        firstRowPanel.add(btnAddProducer);
-        firstRowPanel.add(Box.createHorizontalGlue());
-        
-        final JPanel secondRowPanel = new JPanel();
-        secondRowPanel.setLayout(new BoxLayout(secondRowPanel, BoxLayout.X_AXIS));
-        secondRowPanel.setAlignmentX(Component.LEFT_ALIGNMENT);        
-        secondRowPanel.add(new JLabel("Consumers: "));        
-        final JTextField fieldConsumerCount = new JTextField(20);
+        final JPanel firstRowPanel = layoutProducers();
+
+        final JPanel secondRowPanel = layoutConsumers();
+
+        final JPanel thirdRowPanel = layoutCount(Color.green, "Job count:    ");
+
+        final JTextField fieldJobCount = new JTextField(40);
+        fieldJobCount.setEnabled(false);
+        fieldJobCount.setMaximumSize(fieldJobCount.getPreferredSize());
+        thirdRowPanel.add(fieldJobCount);
+        thirdRowPanel.add(Box.createHorizontalGlue());
+
+        //Registrando o listener de nosso padrão Observer para atualizar a UI quando o tamanho da
+        //fila de jobs mudar (tanto para mais quanto para menos).
+        registerListener(fieldJobCount);
+
+        panel.add(firstRowPanel);
+        panel.add(secondRowPanel);
+        panel.add(thirdRowPanel);
+
+        return panel;
+    }
+
+    private JPanel layoutCount(Color green, String s) {
+        final JPanel thirdRowPanel = new JPanel();
+        thirdRowPanel.setLayout(new BoxLayout(thirdRowPanel, BoxLayout.X_AXIS));
+        thirdRowPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        thirdRowPanel.setBackground(green);
+        thirdRowPanel.add(new JLabel(s));
+        return thirdRowPanel;
+    }
+
+
+    private JPanel layoutConsumers() {
+        final JPanel secondRowPanel = layoutCount(Color.red, "Consumers: ");
+        final JTextField fieldConsumerCount = new JTextField(40);
+        Font font = new Font("Courier", Font.BOLD,12);
+        fieldConsumerCount.setFont(font);
         final JButton btnAddConsumer = new JButton(" + ");
-        btnAddConsumer.addActionListener(e -> {            
+        btnAddConsumer.addActionListener(e -> {
             JobConsumer newConsumer = new JobConsumer(jobs);
             consumers.add(newConsumer);
             fieldConsumerCount.setText(String.valueOf(consumers.size()));
@@ -81,29 +89,40 @@ public class App extends JDialog {
         secondRowPanel.add(fieldConsumerCount);
         secondRowPanel.add(btnAddConsumer);
         secondRowPanel.add(Box.createHorizontalGlue());
+        return secondRowPanel;
+    }
 
-        
-        final JPanel thirdRowPanel = new JPanel();
-        thirdRowPanel.setLayout(new BoxLayout(thirdRowPanel, BoxLayout.X_AXIS));
-        thirdRowPanel.setAlignmentX(Component.LEFT_ALIGNMENT);        
-        thirdRowPanel.add(new JLabel("Job count:    "));        
-        final JTextField fieldJobCount = new JTextField(20);
-        fieldJobCount.setEnabled(false);
-        fieldJobCount.setMaximumSize(fieldJobCount.getPreferredSize());
-        thirdRowPanel.add(fieldJobCount);
-        thirdRowPanel.add(Box.createHorizontalGlue());
-
-        //Registrando o listener de nosso padrão Observer para atualizar a UI quando o tamanho da 
-        //fila de jobs mudar (tanto para mais quanto para menos).
-        this.jobs.addJobQueueListener(jobCount -> {
-           fieldJobCount.setText(String.valueOf(jobCount)); 
+    private JPanel layoutProducers() {
+        final JPanel firstRowPanel = layoutCount(Color.GRAY, "Producers:   ");
+        final JTextField fieldProducerCount = new JTextField(40);
+        final JButton btnAddProducer = new JButton(" + ");
+        btnAddProducer.addActionListener(e -> {
+            JobProducer newProducer = new JobProducer(jobs);
+            producers.add(newProducer);
+            fieldProducerCount.setText(String.valueOf(producers.size()));
+            newProducer.start();
         });
+        fieldProducerCount.setEnabled(false);
+        fieldProducerCount.setMaximumSize(fieldProducerCount.getPreferredSize());
+        btnAddProducer.setMaximumSize(btnAddProducer.getPreferredSize());
+        firstRowPanel.add(fieldProducerCount);
+        firstRowPanel.add(btnAddProducer);
+        firstRowPanel.add(Box.createHorizontalGlue());
+        return firstRowPanel;
+    }
 
-
-        panel.add(firstRowPanel);
-        panel.add(secondRowPanel);
-        panel.add(thirdRowPanel);
+    private JPanel layoutPrincipal() {
+        final JPanel panel = new JPanel();
+        panel.setBackground(Color.blue);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createRaisedBevelBorder());
         return panel;
+    }
+
+    private void registerListener(JTextField fieldJobCount) {
+        this.jobs.addJobQueueListener(jobCount -> {
+           fieldJobCount.setText(String.valueOf(jobCount));
+        });
     }
 
 }
