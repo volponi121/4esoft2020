@@ -4,22 +4,19 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 
+import aula20201109.Job;
 import org.springframework.boot.web.embedded.netty.NettyRouteProvider;
+
+import static java.lang.Thread.sleep;
 
 
 public class App extends JDialog {
     private JobQueue jobs = new JobQueue();
     private List<JobConsumer> consumers = new ArrayList<>();
     private List<JobProducer> producers = new ArrayList<>();
+    private JProgressBar progressBar = new JProgressBar(0);
 
 
     public static void main(String[] args) {        
@@ -52,7 +49,7 @@ public class App extends JDialog {
 
         //Registrando o listener de nosso padrão Observer para atualizar a UI quando o tamanho da
         //fila de jobs mudar (tanto para mais quanto para menos).
-        registerListener(fieldJobCount);
+        registerListener(fieldJobCount, panel);
 
         panel.add(firstRowPanel);
         panel.add(secondRowPanel);
@@ -119,10 +116,37 @@ public class App extends JDialog {
         return panel;
     }
 
-    private void registerListener(JTextField fieldJobCount) {
+    private void registerListener(JTextField fieldJobCount, JPanel panel) {
         this.jobs.addJobQueueListener(jobCount -> {
+           createNewJob(jobCount, panel);
            fieldJobCount.setText(String.valueOf(jobCount));
         });
     }
+
+    protected void createNewJob(int size, JPanel panel) throws InterruptedException {
+        Job newJob = new Job(size);
+        JobProgressPanel jobProgressPanel = new JobProgressPanel(newJob);
+        jobProgressPanel.setBackground(Color.GRAY);
+        panel.add(jobProgressPanel);
+        panel.revalidate();
+        sleep(3000);
+        panel.remove(jobProgressPanel);
+    }
+
+    private static class JobProgressPanel extends JPanel {
+        private Job job;
+        private int wordDone = 0;
+        private JProgressBar progressBar;
+
+        public JobProgressPanel(Job job) {
+            this.progressBar = new JProgressBar(job.getSize());
+            this.job = job;
+            BoxLayout boxLayout = new BoxLayout(this, BoxLayout.LINE_AXIS);
+            this.setLayout(boxLayout);
+            this.add(progressBar);
+        }
+
+    }
+
 
 }

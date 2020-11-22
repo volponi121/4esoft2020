@@ -21,10 +21,10 @@ public class JobQueue {
     }
 
     public static interface JobQueueListener {
-        void jobQueueChanged(int newSize);
+        void jobQueueChanged(int newSize) throws InterruptedException;
     }
 
-    public synchronized void queueJob(int job) {
+    public synchronized void queueJob(int job) throws InterruptedException {
         synchronized (this) {
             this.jobs.add(job);
             if (this.listener != null) {
@@ -33,7 +33,7 @@ public class JobQueue {
         }
     }
 
-    public synchronized Integer getNextJob() {
+    public synchronized Integer getNextJob() throws InterruptedException {
         synchronized (this) {
             if (this.jobs.isEmpty()) {
                 return 0;
